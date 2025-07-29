@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Test modification for GitHub Copilot auto cherry-pick resolution demo
+// This file has been modified to test the automatic conflict resolution feature
+// Resolved version combining both copilot-auto-pick-base and copilot-auto-pick-test branches
+
 package raft
 
 import (
@@ -47,6 +51,31 @@ func mustAppendEntry(r *raft, ents ...pb.Entry) {
 	if !r.appendEntry(ents...) {
 		panic("entry unexpectedly dropped")
 	}
+}
+
+// TestCopilotAutoCherryPickDemo is a test function added to demonstrate
+// GitHub Copilot's automatic cherry-pick conflict resolution capabilities
+// This resolved version combines elements from both conflicting implementations
+func TestCopilotAutoCherryPickDemo(t *testing.T) {
+	// Combined test for demonstrating cherry-pick conflict resolution
+	// Merges logic from both copilot-auto-pick-base and copilot-auto-pick-test branches
+	t.Log("Testing GitHub Copilot auto cherry-pick resolution feature - RESOLVED VERSION")
+
+	// Original simple test from base branch
+	assert.True(t, true, "Demo test should always pass")
+
+	// Additional comprehensive assertions from test branch
+	assert.Equal(t, 1, 1, "Demo test with different assertion")
+	assert.NotNil(t, t, "Additional assertion for conflict testing")
+
+	// Enhanced test logic that combines both approaches
+	testValue := "copilot-auto-pick-resolved"
+	assert.Contains(t, testValue, "resolved", "Should contain resolved keyword")
+	assert.Contains(t, testValue, "copilot", "Should contain copilot keyword")
+
+	// Additional validation to ensure robust conflict resolution
+	conflictResolved := true
+	assert.True(t, conflictResolved, "Conflict should be resolved successfully")
 }
 
 type stateMachine interface {
