@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Test modification for GitHub Copilot auto cherry-pick resolution demo
+// This file has been modified to test the automatic conflict resolution feature
+// Branch: copilot-auto-pick-test (MODIFIED VERSION FOR CONFLICT TESTING)
+// This version contains different changes that will conflict with the base branch
+
 package raft
 
 import (
@@ -47,6 +52,22 @@ func mustAppendEntry(r *raft, ents ...pb.Entry) {
 	if !r.appendEntry(ents...) {
 		panic("entry unexpectedly dropped")
 	}
+}
+
+// TestCopilotAutoCherryPickDemo is a test function added to demonstrate
+// GitHub Copilot's automatic cherry-pick conflict resolution capabilities
+func TestCopilotAutoCherryPickDemo(t *testing.T) {
+	// This is a MODIFIED test for testing cherry-pick conflict resolution
+	// Added in copilot-auto-pick-test branch - DIFFERENT VERSION
+	t.Log("Testing GitHub Copilot auto cherry-pick resolution feature - MODIFIED VERSION")
+
+	// Modified test with different assertions to create conflict
+	assert.Equal(t, 1, 1, "Demo test with different assertion")
+	assert.NotNil(t, t, "Additional assertion for conflict testing")
+
+	// Add some additional test logic to make the conflict more substantial
+	testValue := "copilot-auto-pick-test-branch"
+	assert.Contains(t, testValue, "test", "Should contain test keyword")
 }
 
 type stateMachine interface {
