@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Test modification for GitHub Copilot auto cherry-pick resolution demo
+// This file has been modified to test the automatic conflict resolution feature
+// Branch: copilot-auto-pick-base
+
 package raft
 
 import (
@@ -47,6 +51,261 @@ func mustAppendEntry(r *raft, ents ...pb.Entry) {
 	if !r.appendEntry(ents...) {
 		panic("entry unexpectedly dropped")
 	}
+}
+
+// TestCopilotAutoCherryPickDemo is a test function added to demonstrate
+// GitHub Copilot's automatic cherry-pick conflict resolution capabilities
+func TestCopilotAutoCherryPickDemo(t *testing.T) {
+	// This is a demo test for testing cherry-pick conflict resolution
+	// Added in copilot-auto-pick-base branch
+	t.Log("Testing GitHub Copilot auto cherry-pick resolution feature")
+
+	// Test 1: Simple assertion test
+	t.Run("BasicAssertion", func(t *testing.T) {
+		assert.True(t, true, "Demo test should always pass")
+		assert.False(t, false, "False should be false")
+		assert.Equal(t, 1, 1, "One should equal one")
+	})
+
+	// Test 2: Raft node creation and basic operations
+	t.Run("RaftNodeCreation", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		c := &Config{
+			ID:              1,
+			ElectionTick:    10,
+			HeartbeatTick:   1,
+			Storage:         storage,
+			MaxSizePerMsg:   4096,
+			MaxInflightMsgs: 256,
+		}
+		r := newRaft(c)
+
+		assert.NotNil(t, r, "Raft instance should not be nil")
+		assert.Equal(t, uint64(1), r.id, "Raft ID should be 1")
+		assert.Equal(t, StateFollower, r.state, "Initial state should be Follower")
+	})
+
+	// Test 3: Message handling - Enhanced version
+	t.Run("MessageHandling", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		c := &Config{
+			ID:              1,
+			ElectionTick:    10,
+			HeartbeatTick:   1,
+			Storage:         storage,
+			MaxSizePerMsg:   4096,
+			MaxInflightMsgs: 256,
+		}
+		r := newRaft(c)
+
+		// Test heartbeat message with enhanced validation
+		msg := pb.Message{
+			Type: pb.MsgHeartbeat,
+			From: 2,
+			To:   1,
+			Term: 1,
+		}
+
+		err := r.Step(msg)
+		assert.NoError(t, err, "Should handle heartbeat message without error")
+		assert.Equal(t, uint64(1), r.Term, "Term should be updated to 1")
+	})
+
+	// Test 4: Election timeout simulation
+	t.Run("ElectionTimeout", func(t *testing.T) {
+		// Create storage with multiple peers so election can happen
+		storage := newTestMemoryStorage(withPeers(1, 2, 3))
+		c := &Config{
+			ID:              1,
+			ElectionTick:    3,
+			HeartbeatTick:   1,
+			Storage:         storage,
+			MaxSizePerMsg:   4096,
+			MaxInflightMsgs: 256,
+		}
+		r := newRaft(c)
+
+		initialState := r.state
+		assert.Equal(t, StateFollower, initialState, "Should start as follower")
+
+		// Simulate election timeout by calling tick multiple times
+		for i := 0; i < c.ElectionTick+1; i++ {
+			r.tick()
+		}
+
+		// After election timeout, should become candidate (with peers present)
+		assert.Equal(t, StateCandidate, r.state, "Should become candidate after election timeout")
+	}) // Test 5: Log entry operations
+	t.Run("LogEntryOperations", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		c := &Config{
+			ID:              1,
+			ElectionTick:    10,
+			HeartbeatTick:   1,
+			Storage:         storage,
+			MaxSizePerMsg:   4096,
+			MaxInflightMsgs: 256,
+		}
+		r := newRaft(c)
+
+		// Test log entry creation
+		entry := pb.Entry{
+			Term:  1,
+			Index: 1,
+			Type:  pb.EntryNormal,
+			Data:  []byte("test data"),
+		}
+
+		initialLogLength := len(r.raftLog.allEntries())
+		mustAppendEntry(r, entry)
+
+		assert.Greater(t, len(r.raftLog.allEntries()), initialLogLength,
+			"Log should have more entries after append")
+	})
+
+	// Test 6: Configuration validation
+	t.Run("ConfigValidation", func(t *testing.T) {
+		storage := NewMemoryStorage()
+
+		// Test valid configuration
+		validConfig := &Config{
+			ID:              1,
+			ElectionTick:    10,
+			HeartbeatTick:   1,
+			Storage:         storage,
+			MaxSizePerMsg:   4096,
+			MaxInflightMsgs: 256,
+		}
+
+		err := validConfig.validate()
+		assert.NoError(t, err, "Valid configuration should not return error")
+
+		// Test invalid configuration (HeartbeatTick >= ElectionTick)
+		invalidConfig := &Config{
+			ID:              1,
+			ElectionTick:    1,
+			HeartbeatTick:   10, // Invalid: HeartbeatTick > ElectionTick
+			Storage:         storage,
+			MaxSizePerMsg:   4096,
+			MaxInflightMsgs: 256,
+		}
+
+		err = invalidConfig.validate()
+		assert.Error(t, err, "Invalid configuration should return error")
+	})
+
+	// Test 7: Leader election with multiple candidates
+	t.Run("LeaderElection", func(t *testing.T) {
+		// Create a cluster with 3 nodes
+		storage1 := newTestMemoryStorage(withPeers(1, 2, 3))
+		storage2 := newTestMemoryStorage(withPeers(1, 2, 3))
+		storage3 := newTestMemoryStorage(withPeers(1, 2, 3))
+
+		r1 := newRaft(newTestConfig(1, 10, 1, storage1))
+		r2 := newRaft(newTestConfig(2, 10, 1, storage2))
+		r3 := newRaft(newTestConfig(3, 10, 1, storage3))
+
+		// All should start as followers
+		assert.Equal(t, StateFollower, r1.state)
+		assert.Equal(t, StateFollower, r2.state)
+		assert.Equal(t, StateFollower, r3.state)
+
+		// Trigger election timeout on node 1
+		for i := 0; i < 11; i++ {
+			r1.tick()
+		}
+
+		// Node 1 should become candidate
+		assert.Equal(t, StateCandidate, r1.state)
+		assert.Greater(t, r1.Term, uint64(0), "Term should increase after election")
+	})
+
+	// Test 8: Network partition simulation
+	t.Run("NetworkPartition", func(t *testing.T) {
+		storage := newTestMemoryStorage(withPeers(1, 2, 3))
+		r := newRaft(newTestConfig(1, 5, 1, storage))
+
+		// Simulate a situation where node receives messages from higher term
+		msg := pb.Message{
+			Type: pb.MsgVote,
+			From: 2,
+			To:   1,
+			Term: 5, // Higher term
+		}
+
+		initialTerm := r.Term
+		err := r.Step(msg)
+		assert.NoError(t, err, "Should handle vote message without error")
+		assert.Greater(t, r.Term, initialTerm, "Term should update to higher term")
+	})
+
+	// Test 9: Log consistency check
+	t.Run("LogConsistency", func(t *testing.T) {
+		storage := newTestMemoryStorage(withPeers(1, 2))
+		r := newRaft(newTestConfig(1, 10, 1, storage))
+
+		// Add some entries to the log
+		entries := []pb.Entry{
+			{Term: 1, Index: 1, Data: []byte("entry1")},
+			{Term: 1, Index: 2, Data: []byte("entry2")},
+			{Term: 2, Index: 3, Data: []byte("entry3")},
+		}
+
+		for _, entry := range entries {
+			mustAppendEntry(r, entry)
+		}
+
+		// Check log length
+		assert.Equal(t, uint64(3), r.raftLog.lastIndex(), "Log should have 3 entries")
+
+		// Check specific entries
+		ents, err := r.raftLog.entries(1, noLimit)
+		assert.NoError(t, err, "Should retrieve entries without error")
+		assert.Len(t, ents, 3, "Should retrieve 3 entries")
+		assert.Equal(t, []byte("entry1"), ents[0].Data, "First entry data should match")
+		assert.Equal(t, []byte("entry3"), ents[2].Data, "Last entry data should match")
+	})
+
+	// Test 10: State transitions
+	t.Run("StateTransitions", func(t *testing.T) {
+		storage := newTestMemoryStorage(withPeers(1, 2, 3))
+		r := newRaft(newTestConfig(1, 5, 1, storage))
+
+		// Should start as follower
+		assert.Equal(t, StateFollower, r.state)
+
+		// Become candidate (simulate election timeout)
+		r.becomeCandidate()
+		assert.Equal(t, StateCandidate, r.state)
+
+		// Become leader (simulate winning election)
+		r.becomeLeader()
+		assert.Equal(t, StateLeader, r.state)
+
+		// Become follower again (simulate higher term message)
+		r.becomeFollower(r.Term+1, 2)
+		assert.Equal(t, StateFollower, r.state)
+		assert.Equal(t, uint64(2), r.lead, "Should follow node 2")
+	})
+
+	// Test 11: Progress tracking
+	t.Run("ProgressTracking", func(t *testing.T) {
+		storage := newTestMemoryStorage(withPeers(1, 2, 3))
+		r := newRaft(newTestConfig(1, 10, 1, storage))
+
+		// Must become candidate first, then leader
+		r.becomeCandidate()
+		r.becomeLeader()
+
+		// Check that progress is tracked for all peers
+		assert.NotNil(t, r.trk.Progress[2], "Should track progress for peer 2")
+		assert.NotNil(t, r.trk.Progress[3], "Should track progress for peer 3")
+
+		// Check initial progress state
+		prog2 := r.trk.Progress[2]
+		assert.Equal(t, uint64(0), prog2.Match, "Initial match index should be 0")
+		assert.Equal(t, uint64(1), prog2.Next, "Initial next index should be 1")
+	})
 }
 
 type stateMachine interface {
