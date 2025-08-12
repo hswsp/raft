@@ -69,8 +69,16 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 	// Added in copilot-auto-pick-base branch
 	t.Log("Testing GitHub Copilot auto cherry-pick resolution feature")
 
+	// Use the helper function to validate test environment (creates dependency)
+	isValid, message := helperValidateTestEnvironment()
+	t.Log(message)
+	assert.True(t, isValid, "Test environment should be valid")
+
 	// Simple test that always passes
 	assert.True(t, true, "Demo test should always pass")
+
+	// Additional assertion using the helper function result
+	assert.Contains(t, message, "copilot-auto-pick-dependent", "Message should contain branch name")
 }
 
 type stateMachine interface {
