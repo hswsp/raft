@@ -64,7 +64,9 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 	t.Run("BasicAssertion", func(t *testing.T) {
 		assert.True(t, true, "Demo test should always pass")
 		assert.False(t, false, "False should be false")
-		assert.Equal(t, 1, 1, "One should equal one")
+		 assert.Equal(t, 1, 1, "One should equal one")
+		// Added line in feature-branch-2: different validation approach
+		assert.Greater(t, 2, 1, "Two should be greater than one")
 	})
 
 	// Test 2: Raft node creation and basic operations
@@ -88,7 +90,7 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 	// Test 3: Message handling - Alternative implementation
 	t.Run("MessageHandling", func(t *testing.T) {
 		storage := NewMemoryStorage()
-		c :=  &Config{
+		c := &Config{
 			ID:              1,
 			ElectionTick:    10,
 			HeartbeatTick:   1,
