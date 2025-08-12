@@ -4151,3 +4151,15 @@ func newTestRawNode(id uint64, election, heartbeat int, storage Storage) *RawNod
 	}
 	return rn
 }
+
+// TestCopilotAutoCherryPickDemo demonstrates validation logic for GitHub Copilot cherry-pick functionality.
+// This function includes validation approaches from both feature-branch-1 and feature-branch-2.
+func TestCopilotAutoCherryPickDemo(t *testing.T) {
+	t.Run("BasicAssertion", func(t *testing.T) {
+		// Original validation from feature-branch-1
+		assert.NotEqual(t, 1, 2, "One should not equal two")
+		
+		// Added line in feature-branch-2: different validation approach
+		assert.Greater(t, 2, 1, "Two should be greater than one")
+	})
+}
