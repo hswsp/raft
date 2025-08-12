@@ -500,6 +500,11 @@ func (rn *RawNode) Status() Status {
 	return status
 }
 
+// ElectionMetrics returns a snapshot of election-related metrics.
+func (rn *RawNode) ElectionMetrics() ElectionSnapshot {
+	return rn.raft.electionMetrics()
+}
+
 // BasicStatus returns a BasicStatus. Notably this does not contain the
 // Progress map; see WithProgress for an allocation-free way to inspect it.
 func (rn *RawNode) BasicStatus() BasicStatus {

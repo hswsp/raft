@@ -425,6 +425,9 @@ type raft struct {
 
 	logger Logger
 
+	// metrics tracks election-related metrics for this raft node
+	metrics *ElectionMetrics
+
 	// pendingReadIndexMessages is used to store messages of type MsgReadIndex
 	// that can't be answered as new leader didn't committed any log in
 	// current term. Those will be handled as fast as first log is committed in
@@ -462,6 +465,7 @@ func newRaft(c *Config) *raft {
 		disableConfChangeValidation: c.DisableConfChangeValidation,
 		stepDownOnRemoval:           c.StepDownOnRemoval,
 		traceLogger:                 c.TraceLogger,
+		metrics:                     &ElectionMetrics{},
 	}
 
 	traceInitState(r)
@@ -505,6 +509,11 @@ func (r *raft) hardState() pb.HardState {
 		Vote:   r.Vote,
 		Commit: r.raftLog.committed,
 	}
+}
+
+// electionMetrics returns a snapshot of election-related metrics
+func (r *raft) electionMetrics() ElectionSnapshot {
+	return r.metrics.GetElectionMetrics()
 }
 
 // send schedules persisting state to a stable storage and AFTER that
@@ -935,6 +944,10 @@ func (r *raft) becomeLeader() {
 	if r.state == StateFollower {
 		panic("invalid transition [follower -> leader]")
 	}
+	
+	// Track election win
+	r.metrics.ElectionsWon.Add(1)
+	
 	r.step = stepLeader
 	r.reset(r.Term)
 	r.tick = r.tickHeartbeat
@@ -1028,6 +1041,12 @@ func (r *raft) campaign(t CampaignType) {
 		// better safe than sorry.
 		r.logger.Warningf("%x is unpromotable; campaign() should have been called", r.id)
 	}
+	
+	// Track election initiation for non-transfer campaigns
+	if t != campaignTransfer {
+		r.metrics.ElectionsInitiated.Add(1)
+	}
+	
 	var term uint64
 	var voteMsg pb.MessageType
 	if t == campaignPreElection {
@@ -1075,6 +1094,8 @@ func (r *raft) campaign(t CampaignType) {
 func (r *raft) poll(id uint64, t pb.MessageType, v bool) (granted int, rejected int, result quorum.VoteResult) {
 	if v {
 		r.logger.Infof("%x received %s from %x at term %d", r.id, t, id, r.Term)
+		// Track vote received
+		r.metrics.VotesReceived.Add(1)
 	} else {
 		r.logger.Infof("%x received %s rejection from %x at term %d", r.id, t, id, r.Term)
 	}
@@ -1232,6 +1253,10 @@ func (r *raft) Step(m pb.Message) error {
 			// https://github.com/etcd-io/etcd/issues/7625#issuecomment-488798263.
 			r.logger.Infof("%x [logterm: %d, index: %d, vote: %x] cast %s for %x [logterm: %d, index: %d] at term %d",
 				r.id, lastID.term, lastID.index, r.Vote, m.Type, m.From, candLastID.term, candLastID.index, r.Term)
+			
+			// Track vote granted
+			r.metrics.VotesGranted.Add(1)
+			
 			// When responding to Msg{Pre,}Vote messages we include the term
 			// from the message, not the local term. To see why, consider the
 			// case where a single node was previously partitioned away and

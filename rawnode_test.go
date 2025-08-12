@@ -51,6 +51,9 @@ func (a *rawNodeAdapter) Stop() {}
 // Status retirns RawNode's status as *Status.
 func (a *rawNodeAdapter) Status() Status { return a.RawNode.Status() }
 
+// ElectionMetrics returns election metrics from the RawNode.
+func (a *rawNodeAdapter) ElectionMetrics() ElectionSnapshot { return a.RawNode.ElectionMetrics() }
+
 // Advance is when RawNode takes a Ready. It doesn't really have to do that I think? It can hold on
 // to it internally. But maybe that approach is frail.
 func (a *rawNodeAdapter) Advance() { a.RawNode.Advance(Ready{}) }

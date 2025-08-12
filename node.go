@@ -225,6 +225,8 @@ type Node interface {
 
 	// Status returns the current status of the raft state machine.
 	Status() Status
+	// ElectionMetrics returns a snapshot of election-related metrics.
+	ElectionMetrics() ElectionSnapshot
 	// ReportUnreachable reports the given node is not reachable for the last send.
 	ReportUnreachable(id uint64)
 	// ReportSnapshot reports the status of the sent snapshot. The id is the raft ID of the follower
@@ -305,6 +307,7 @@ type node struct {
 	done       chan struct{}
 	stop       chan struct{}
 	status     chan chan Status
+	electionMetrics chan chan ElectionSnapshot
 
 	rn *RawNode
 }
@@ -324,6 +327,7 @@ func newNode(rn *RawNode) node {
 		done:   make(chan struct{}),
 		stop:   make(chan struct{}),
 		status: make(chan chan Status),
+		electionMetrics: make(chan chan ElectionSnapshot),
 		rn:     rn,
 	}
 }
@@ -446,6 +450,8 @@ func (n *node) run() {
 			advancec = nil
 		case c := <-n.status:
 			c <- getStatus(r)
+		case c := <-n.electionMetrics:
+			c <- r.electionMetrics()
 		case <-n.stop:
 			close(n.done)
 			return
@@ -573,6 +579,16 @@ func (n *node) Status() Status {
 		return <-c
 	case <-n.done:
 		return Status{}
+	}
+}
+
+func (n *node) ElectionMetrics() ElectionSnapshot {
+	c := make(chan ElectionSnapshot)
+	select {
+	case n.electionMetrics <- c:
+		return <-c
+	case <-n.done:
+		return ElectionSnapshot{}
 	}
 }
 
