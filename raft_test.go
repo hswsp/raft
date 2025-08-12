@@ -85,10 +85,10 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 		assert.Equal(t, StateFollower, r.state, "Initial state should be Follower")
 	})
 
-	// Test 3: Message handling
+	// Test 3: Message handling - Alternative implementation
 	t.Run("MessageHandling", func(t *testing.T) {
 		storage := NewMemoryStorage()
-		c := &Config{
+		c :=  &Config{
 			ID:              1,
 			ElectionTick:    10,
 			HeartbeatTick:   1,
@@ -98,7 +98,7 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 		}
 		r := newRaft(c)
 
-		// Test heartbeat message
+		// Test heartbeat message with different approach
 		msg := pb.Message{
 			Type: pb.MsgHeartbeat,
 			From: 2,
@@ -108,6 +108,7 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 
 		err := r.Step(msg)
 		assert.NoError(t, err, "Should handle heartbeat message without error")
+		assert.Equal(t, StateFollower, r.state, "Should remain in follower state")
 	})
 
 	// Test 4: Election timeout simulation
