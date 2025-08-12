@@ -65,6 +65,8 @@ func TestCopilotAutoCherryPickDemo(t *testing.T) {
 		assert.True(t, true, "Demo test should always pass")
 		assert.False(t, false, "False should be false")
 		assert.Equal(t, 1, 1, "One should equal one")
+		// Added line in feature-branch-1: extra validation
+		assert.NotEqual(t, 1, 2, "One should not equal two")
 	})
 
 	// Test 2: Raft node creation and basic operations
