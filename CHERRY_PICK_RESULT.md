@@ -1,12 +1,12 @@
-# Cherry-pick Result: e68aaf159d to feature-branch-1
+# Cherry-pick Result: 2eb4cd24c3 to feature-branch-1
 
 ## Summary
-Successfully cherry-picked commit `e68aaf159dc65550d246d2e27b46ed3e843e3f1b` to `feature-branch-1` branch.
+Successfully cherry-picked commit `2eb4cd24c3953935ba84181c7fc6b0df19b20b19` to `feature-branch-1` branch.
 
 ## Original Commit Details
-- **Commit SHA**: e68aaf159dc65550d246d2e27b46ed3e843e3f1b
-- **Author**: hswsp <hswsp@mail.ustc.edu.cn>
-- **Date**: Wed Aug 13 00:24:17 2025 +0800
+- **Commit SHA**: 2eb4cd24c3953935ba84181c7fc6b0df19b20b19
+- **Author**: GitHub Actions <actions@github.com>
+- **Date**: Wed Aug 13 02:16:51 2025 +0000
 - **Message**: feat: improve TestCopilotAutoCherryPickDemo with different validation
 
 ## Changes Made
@@ -46,7 +46,7 @@ t.Run("BasicAssertion", func(t *testing.T) {
 - ✅ **Integration**: No conflicts with existing test suite
 
 ## Final Result
-The cherry-pick was completed successfully on `feature-branch-1` with commit hash `5700a7db9b54fb93b057c118d71abde9710d986c`.
+The cherry-pick was completed successfully on `feature-branch-1` with commit hash `3b75004bcfe4c33b7ea518d6d7a59027996ca5db`.
 
 Both validation approaches are now present:
 - Original feature-branch-1 validation: `assert.NotEqual(t, 1, 2, "One should not equal two")`
