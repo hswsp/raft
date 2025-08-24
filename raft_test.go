@@ -4151,3 +4151,33 @@ func newTestRawNode(id uint64, election, heartbeat int, storage Storage) *RawNod
 	}
 	return rn
 }
+
+func TestCopilotAutoCherryPickDemo(t *testing.T) {
+	// Test 3: Message handling - Alternative implementation
+	t.Run("Message handling", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		c :=  &Config{
+			ID:              1,
+			ElectionTick:    10,
+			HeartbeatTick:   1,
+			Storage:         storage,
+			MaxSizePerMsg:   noLimit,
+			MaxInflightMsgs: 256,
+		}
+		r := newRaft(c)
+		
+		// Test heartbeat message with different approach
+		msg := pb.Message{
+			Type: pb.MsgHeartbeat,
+			From: 2,
+			To:   1,
+			Term: 1,
+		}
+		
+		r.Step(msg)
+		
+		// Enhanced test validation with both assertions
+		assert.Equal(t, uint64(1), r.Term, "Term should be updated to 1")
+		assert.Equal(t, StateFollower, r.state, "Should remain in follower state")
+	})
+}
